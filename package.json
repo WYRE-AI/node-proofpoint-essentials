@@ -1,6 +1,6 @@
 {
   "name": "@wyre-ai/node-proofpoint-essentials",
-  "version": "0.0.0-semantically-released",
+  "version": "1.0.0",
   "description": "Node.js/TypeScript client library for the Proofpoint Essentials API",
   "type": "module",
   "main": "./dist/index.cjs",
