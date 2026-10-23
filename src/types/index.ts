@@ -1,7 +1,5 @@
-/** Input fields documented by Proofpoint's User schema. */
+/** Create input fields documented by Proofpoint's User schema. */
 export interface ProofpointUserInput {
-  /** Read only in Proofpoint responses. */
-  uid?: number;
   primary_email: string;
   is_active?: boolean;
   type?: string;
@@ -16,14 +14,6 @@ export interface ProofpointUserInput {
   is_billable?: boolean;
   odin_settings?: Record<string, unknown>;
   read_only_user?: boolean;
-  /** Read only in Proofpoint responses. */
-  creation_date?: string;
-  /** Read only in Proofpoint responses. */
-  last_update?: string;
-  /** Read only in Proofpoint responses. */
-  last_login?: string;
-  /** Supported on update only, not POST. */
-  password?: string;
   [key: string]: unknown;
 }
 

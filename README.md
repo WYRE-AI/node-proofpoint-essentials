@@ -158,10 +158,15 @@ await client.token.create(); // mints an Odin-based SSO token
 strings and/or Domain objects and converts strings to `{ name }` objects. Bodies are sent
 bare, without `users` or `domains` wrappers (OpenAPI operations `postUser` / `postDomain`).
 Users require a non-empty `primary_email`; `email` is not the Proofpoint field name.
+`users.create` drops response-only fields (`uid`, `creation_date`, `last_update`, `last_login`)
+and `password` (update-only) from the POST body without modifying the input.
 Domain names must be non-empty. Invalid items raise `ValidationError` before any request.
 
 Both methods return `BatchItemResult[]`. A 201 created object becomes
-`[{ success: true, status: 201, ...createdObject }]`, preserving its fields.
+a one-item array, preserving its fields and any explicit boolean `success` or numeric `status`.
+These fields are only synthesized when absent or invalid: `status` defaults to 201;
+`success` is inferred from a numeric `status` (or `code`) being 2xx, and defaults to true
+when neither is numeric.
 A 207 Multi-Status never throws: an array is returned directly, a `{ results: [...] }`
 envelope is unwrapped, and any other body becomes a one-item array. Missing `success`
 is set to true only for items with a numeric 2xx `status` or `code`; otherwise it stays absent.

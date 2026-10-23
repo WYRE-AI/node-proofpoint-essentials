@@ -31,6 +31,18 @@ for (const resource of ['users', 'domains'] as const) {
       expect(await rejected.json()).toEqual({ message: 'Wrapped body is invalid' });
     });
 
+    it.each([
+      [{ success: false, status: 422 }, { success: false, status: 422 }],
+      [{ code: 409 }, { code: 409, success: false, status: 201 }],
+      [{ status: 204 }, { status: 204, success: true }],
+      [{ code: 201 }, { code: 201, success: true, status: 201 }],
+      [{ success: true, status: 422 }, { success: true, status: 422 }],
+      [{ success: 'invalid', status: 'invalid' }, { success: true, status: 201 }],
+    ])('preserves or infers the outcome of a 201 object: %j', async (body, expected) => {
+      server.use(http.post(`${BASE_URL}/orgs/example.com/${resource}`, () => HttpResponse.json(body, { status: 201 })));
+      expect(await create()).toEqual([expected]);
+    });
+
     it.each(['array', 'results', 'object'] as const)('normalizes 207 %s without inventing success', async (shape) => {
       const items = [{ status: 201, extra: 'kept' }, { code: 204 }, { status: 422 }, { message: 'unknown' }, { success: false, status: 201 }];
       const body = shape === 'array' ? items : shape === 'results' ? { results: items } : items[3];

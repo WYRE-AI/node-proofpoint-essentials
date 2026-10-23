@@ -3,7 +3,11 @@ import type { BatchItemResult } from '../types/index.js';
 /** Preserve raw per-item fields and only infer success from explicit 2xx statuses. */
 export function normalizeCreateResponse(status: number, data: unknown): BatchItemResult[] {
   if (status === 201 && data && typeof data === 'object' && !Array.isArray(data)) {
-    return [{ ...data, success: true, status: 201 }];
+    const item = data as Record<string, unknown>;
+    const code = typeof item.status === 'number' ? item.status : item.code;
+    const success = typeof item.success === 'boolean' ? item.success
+      : typeof code === 'number' ? code >= 200 && code < 300 : true;
+    return [{ ...item, success, status: typeof item.status === 'number' ? item.status : 201 }];
   }
   const items = Array.isArray(data) ? data
     : data && typeof data === 'object' && 'results' in data && Array.isArray(data.results)

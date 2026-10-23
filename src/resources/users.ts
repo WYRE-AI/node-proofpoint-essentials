@@ -39,9 +39,13 @@ export class UsersResource {
         throw new ValidationError(message, [{ field: `users[${index}].primary_email`, message }], item);
       }
     }
+    const sanitized = items.map((item) => {
+      const { uid, creation_date, last_update, last_login, password, ...input } = item;
+      return input;
+    });
     const response = await this.httpClient.requestWithStatus<unknown>(`/orgs/${encodeURIComponent(orgDomain)}/users`, {
       method: 'POST',
-      body: users,
+      body: Array.isArray(users) ? sanitized : sanitized[0],
     });
     return normalizeCreateResponse(response.status, response.data);
   }
