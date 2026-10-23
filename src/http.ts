@@ -37,6 +37,11 @@ export class HttpClient {
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    return (await this.requestWithStatus<T>(path, options)).data;
+  }
+
+  /** Request parsed data together with its HTTP status, using the same error handling. */
+  async requestWithStatus<T>(path: string, options: RequestOptions = {}): Promise<{ status: number; data: T }> {
     const url = this.buildUrl(path, options.params);
     const headers: Record<string, string> = {
       'X-User': this.username,
@@ -57,7 +62,7 @@ export class HttpClient {
       body,
     });
 
-    return this.handleResponse<T>(response);
+    return { status: response.status, data: await this.handleResponse<T>(response) };
   }
 
   private buildUrl(path: string, params?: QueryParams): string {

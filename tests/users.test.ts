@@ -35,15 +35,37 @@ describe('UsersResource', () => {
   it('creates users in a batch and returns 207 partial results without throwing', async () => {
     const client = makeClient();
     const result = await client.users.create('example.com', [
-      { email: 'carol@example.com' },
-      { email: 'not-an-email' },
+      { primary_email: 'carol@example.com' },
+      { primary_email: 'not-an-email' },
     ]);
     expect(result).toEqual(fixtures.users.usersCreatePartial);
   });
 
+  it.each(['single', 'array'] as const)('strips non-create fields from a %s input without mutation', async (shape) => {
+    const user = Object.freeze({
+      primary_email: 'alice@example.com', firstname: 'Alice', custom_field: 'kept',
+      uid: 123, creation_date: '2026-01-01', last_update: '2026-02-01',
+      last_login: '2026-03-01', password: 'test-only',
+    });
+    const original = { ...user };
+    const input = shape === 'single' ? user : [user, { ...user, primary_email: 'bob@example.com' }];
+    const snapshot = structuredClone(input);
+    let captured: unknown;
+    server.use(http.post(`${BASE_URL}/orgs/example.com/users`, async ({ request }) => {
+      captured = await request.json();
+      return HttpResponse.json([], { status: 207 });
+    }));
+
+    await makeClient().users.create('example.com', input);
+    const expected = { primary_email: 'alice@example.com', firstname: 'Alice', custom_field: 'kept' };
+    expect(captured).toEqual(shape === 'single' ? expected : [expected, { ...expected, primary_email: 'bob@example.com' }]);
+    expect(input).toEqual(snapshot);
+    expect(user).toEqual(original);
+  });
+
   it('updates a user', async () => {
     const client = makeClient();
-    const result = await client.users.update('example.com', 'alice@example.com', { lastname: 'Anderson-Smith' });
+    const result = await client.users.update('example.com', 'alice@example.com', { surname: 'Anderson-Smith' });
     expect(result).toEqual({});
   });
 

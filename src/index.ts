@@ -29,6 +29,8 @@ export type {
   Organization,
   Domain,
   ProofpointUser,
+  ProofpointUserInput,
+  DomainInput,
   EndpointDiscovery,
   Features,
   Licensing,

@@ -1,7 +1,36 @@
+/** Create input fields documented by Proofpoint's User schema. */
+export interface ProofpointUserInput {
+  primary_email: string;
+  is_active?: boolean;
+  type?: string;
+  send_welcome_email?: boolean;
+  firstname?: string;
+  surname?: string;
+  alias_emails?: string[];
+  safe_list_senders?: string[];
+  block_list_senders?: string[];
+  white_list_senders?: string[];
+  black_list_senders?: string[];
+  is_billable?: boolean;
+  odin_settings?: Record<string, unknown>;
+  read_only_user?: boolean;
+  [key: string]: unknown;
+}
+
+/** Input fields documented by Proofpoint's Domain schema. */
+export interface DomainInput {
+  name: string;
+  is_active?: boolean;
+  is_relay?: boolean;
+  destination?: string;
+  failovers?: string[];
+  [key: string]: unknown;
+}
+
 /**
  * Domain types for the Proofpoint Essentials API.
  *
- * Proofpoint's public API docs do not publish a formal JSON schema, so these
+ * Based on Proofpoint's OpenAPI schemas and observed responses, these
  * interfaces model the documented/observed shape of each resource while
  * remaining permissive (index signatures) for fields the docs don't
  * enumerate. Callers that need a specific field not modeled here can still
@@ -27,8 +56,12 @@ export interface Domain {
 
 export interface ProofpointUser {
   id?: number | string;
+  primary_email?: string;
+  surname?: string;
+  /** @deprecated Not a Proofpoint field name; use primary_email. */
   email?: string;
   firstname?: string;
+  /** @deprecated Not a Proofpoint field name; use surname. */
   lastname?: string;
   is_active?: boolean;
   [key: string]: unknown;
@@ -82,8 +115,6 @@ export interface BatchItemResult {
 }
 
 /**
- * Raw batch-create response. Batch create methods return this verbatim
- * (never throwing on 207) so callers can inspect partial failures
- * themselves.
+ * Legacy batch response union. Create methods return normalized BatchItemResult arrays.
  */
 export type BatchResult = BatchItemResult[] | { results?: BatchItemResult[]; [key: string]: unknown };
