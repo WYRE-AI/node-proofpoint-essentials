@@ -1,5 +1,7 @@
+import { ValidationError } from '../errors.js';
+import { normalizeCreateResponse } from './batch.js';
 import type { HttpClient } from '../http.js';
-import type { BatchResult, ProofpointUser } from '../types/index.js';
+import type { BatchItemResult, ProofpointUserInput, ProofpointUser } from '../types/index.js';
 
 /**
  * Users resource -- `/orgs/{orgDomain}/users`.
@@ -26,17 +28,22 @@ export class UsersResource {
   }
 
   /**
-   * POST /orgs/{orgDomain}/users -- batch-create users.
-   *
-   * A 207 Multi-Status response means partial success/failure; this method
-   * never throws on 207, it returns the raw parsed body so callers can
-   * inspect per-item results themselves.
+   * POST /orgs/{orgDomain}/users (postUser in Proofpoint's OpenAPI).
+   * Sends a bare User object or array of User objects. Returns normalized item results; never throws on 207.
    */
-  async create(orgDomain: string, users: Record<string, unknown>[]): Promise<BatchResult> {
-    return this.httpClient.request<BatchResult>(`/orgs/${encodeURIComponent(orgDomain)}/users`, {
+  async create(orgDomain: string, users: ProofpointUserInput | ProofpointUserInput[]): Promise<BatchItemResult[]> {
+    const items = Array.isArray(users) ? users : [users];
+    for (const [index, item] of items.entries()) {
+      if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.primary_email !== 'string' || !item.primary_email.trim()) {
+        const message = `users[${index}].primary_email must be a non-empty string${item && typeof item === 'object' && 'email' in item && !('primary_email' in item) ? '; email is not the Proofpoint field name; use primary_email' : ''}`;
+        throw new ValidationError(message, [{ field: `users[${index}].primary_email`, message }], item);
+      }
+    }
+    const response = await this.httpClient.requestWithStatus<unknown>(`/orgs/${encodeURIComponent(orgDomain)}/users`, {
       method: 'POST',
-      body: { users },
+      body: users,
     });
+    return normalizeCreateResponse(response.status, response.data);
   }
 
   /** PUT /orgs/{orgDomain}/users/{email} */

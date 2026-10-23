@@ -16,9 +16,13 @@ export const handlers = [
 
   // Domains
   http.get(`${BASE_URL}/orgs/example.com/domains`, () => HttpResponse.json(fixtures.domains.domainsList)),
-  http.post(`${BASE_URL}/orgs/example.com/domains`, () =>
-    HttpResponse.json(fixtures.domains.domainsCreateSuccess, { status: 201 })
-  ),
+  http.post(`${BASE_URL}/orgs/example.com/domains`, async ({ request }) => {
+    const body = await request.json();
+    if (body && typeof body === 'object' && 'domains' in body) {
+      return HttpResponse.json({ message: 'Wrapped domains body is invalid' }, { status: 400 });
+    }
+    return HttpResponse.json({ name: 'new.example.com' }, { status: 201 });
+  }),
   http.put(`${BASE_URL}/orgs/example.com/domains/example.com`, () => new HttpResponse(null, { status: 204 })),
   http.delete(`${BASE_URL}/orgs/example.com/domains/example.com`, () => new HttpResponse(null, { status: 204 })),
 
@@ -31,9 +35,13 @@ export const handlers = [
     }
     return HttpResponse.json(fixtures.users.usersList);
   }),
-  http.post(`${BASE_URL}/orgs/example.com/users`, () =>
-    HttpResponse.json(fixtures.users.usersCreatePartial, { status: 207 })
-  ),
+  http.post(`${BASE_URL}/orgs/example.com/users`, async ({ request }) => {
+    const body = await request.json();
+    if (body && typeof body === 'object' && 'users' in body) {
+      return HttpResponse.json({ message: 'Wrapped users body is invalid' }, { status: 400 });
+    }
+    return HttpResponse.json(fixtures.users.usersCreatePartial, { status: 207 });
+  }),
   http.put(`${BASE_URL}/orgs/example.com/users/alice%40example.com`, () => new HttpResponse(null, { status: 204 })),
   http.delete(`${BASE_URL}/orgs/example.com/users/alice%40example.com`, () => new HttpResponse(null, { status: 204 })),
 

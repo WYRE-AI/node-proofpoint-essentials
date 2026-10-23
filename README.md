@@ -94,7 +94,9 @@ await client.orgs.delete(domain);
 
 ```ts
 await client.domains.list(orgDomain);
-await client.domains.create(orgDomain, ['new.example.com']); // batch; see 207 handling below
+await client.domains.create(orgDomain, ['new.example.com', { name: 'relay.example.com', is_relay: true }]);
+// POST body: [{"name":"new.example.com"},{"name":"relay.example.com","is_relay":true}]
+// Returns a normalized array; see 207 handling below.
 await client.domains.update(orgDomain, domain, data);
 await client.domains.delete(orgDomain, domain);
 ```
@@ -104,7 +106,10 @@ await client.domains.delete(orgDomain, domain);
 ```ts
 await client.users.list(orgDomain);
 await client.users.get(orgDomain, email); // GET ?email= filter
-await client.users.create(orgDomain, [{ email: 'new@example.com' }]); // batch; see 207 handling below
+await client.users.create(orgDomain, { primary_email: 'new@example.com', firstname: 'New', surname: 'User' });
+// Single POST body: {"primary_email":"new@example.com","firstname":"New","surname":"User"}
+await client.users.create(orgDomain, [{ primary_email: 'batch@example.com', firstname: 'Batch', surname: 'User' }]);
+// Batch POST body: [{"primary_email":"batch@example.com","firstname":"Batch","surname":"User"}]
 await client.users.update(orgDomain, email, data);
 await client.users.delete(orgDomain, email);
 ```
@@ -149,14 +154,24 @@ await client.token.create(); // mints an Odin-based SSO token
 
 ## Batch endpoints and 207 Multi-Status
 
-`domains.create` and `users.create` accept arrays and hit Proofpoint's batch-create endpoints.
-A `207 Multi-Status` response means some items succeeded and others failed. This client does
-**not** throw on 207 -- it returns the raw parsed response body so you can inspect per-item
-results yourself:
+`users.create` accepts one User object or an array; `domains.create` accepts an array of
+strings and/or Domain objects and converts strings to `{ name }` objects. Bodies are sent
+bare, without `users` or `domains` wrappers (OpenAPI operations `postUser` / `postDomain`).
+Users require a non-empty `primary_email`; `email` is not the Proofpoint field name.
+Domain names must be non-empty. Invalid items raise `ValidationError` before any request.
+
+Both methods return `BatchItemResult[]`. A 201 created object becomes
+`[{ success: true, status: 201, ...createdObject }]`, preserving its fields.
+A 207 Multi-Status never throws: an array is returned directly, a `{ results: [...] }`
+envelope is unwrapped, and any other body becomes a one-item array. Missing `success`
+is set to true only for items with a numeric 2xx `status` or `code`; otherwise it stays absent.
 
 ```ts
-const result = await client.domains.create('example.com', ['good.example.com', 'bad domain']);
-// result is the raw batch response -- inspect each item for its own success/failure
+const results = await client.users.create('example.com', [
+  { primary_email: 'alice@example.com', firstname: 'Alice', surname: 'Smith' },
+  { primary_email: 'bob@example.com', firstname: 'Bob', surname: 'Jones' },
+]);
+for (const item of results) console.log(item.status, item.success);
 ```
 
 ## Error handling

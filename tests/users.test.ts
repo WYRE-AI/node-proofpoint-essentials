@@ -35,15 +35,15 @@ describe('UsersResource', () => {
   it('creates users in a batch and returns 207 partial results without throwing', async () => {
     const client = makeClient();
     const result = await client.users.create('example.com', [
-      { email: 'carol@example.com' },
-      { email: 'not-an-email' },
+      { primary_email: 'carol@example.com' },
+      { primary_email: 'not-an-email' },
     ]);
     expect(result).toEqual(fixtures.users.usersCreatePartial);
   });
 
   it('updates a user', async () => {
     const client = makeClient();
-    const result = await client.users.update('example.com', 'alice@example.com', { lastname: 'Anderson-Smith' });
+    const result = await client.users.update('example.com', 'alice@example.com', { surname: 'Anderson-Smith' });
     expect(result).toEqual({});
   });
 

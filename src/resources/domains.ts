@@ -1,5 +1,7 @@
+import { ValidationError } from '../errors.js';
+import { normalizeCreateResponse } from './batch.js';
 import type { HttpClient } from '../http.js';
-import type { BatchResult, Domain } from '../types/index.js';
+import type { BatchItemResult, DomainInput, Domain } from '../types/index.js';
 
 /**
  * Domains resource -- `/orgs/{orgDomain}/domains`.
@@ -13,17 +15,22 @@ export class DomainsResource {
   }
 
   /**
-   * POST /orgs/{orgDomain}/domains -- batch-create domains.
-   *
-   * A 207 Multi-Status response means partial success/failure; this method
-   * never throws on 207, it returns the raw parsed body so callers can
-   * inspect per-item results themselves.
+   * POST /orgs/{orgDomain}/domains (postDomain in Proofpoint's OpenAPI).
+   * Sends a bare array of Domain objects. Returns normalized item results; never throws on 207.
    */
-  async create(orgDomain: string, domains: string[]): Promise<BatchResult> {
-    return this.httpClient.request<BatchResult>(`/orgs/${encodeURIComponent(orgDomain)}/domains`, {
+  async create(orgDomain: string, domains: Array<string | DomainInput>): Promise<BatchItemResult[]> {
+    const items = domains.map((domain) => typeof domain === 'string' ? { name: domain } : domain);
+    for (const [index, item] of items.entries()) {
+      if (!item || typeof item !== 'object' || Array.isArray(item) || typeof item.name !== 'string' || !item.name.trim()) {
+        const message = `domains[${index}].name must be a non-empty string`;
+        throw new ValidationError(message, [{ field: `domains[${index}].name`, message }], item);
+      }
+    }
+    const response = await this.httpClient.requestWithStatus<unknown>(`/orgs/${encodeURIComponent(orgDomain)}/domains`, {
       method: 'POST',
-      body: { domains },
+      body: items,
     });
+    return normalizeCreateResponse(response.status, response.data);
   }
 
   /** PUT /orgs/{orgDomain}/domains/{domain} */

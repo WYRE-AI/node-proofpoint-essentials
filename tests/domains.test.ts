@@ -20,7 +20,7 @@ describe('DomainsResource', () => {
   it('creates domains in a batch (all succeed, 201)', async () => {
     const client = makeClient();
     const result = await client.domains.create('example.com', ['new.example.com']);
-    expect(result).toEqual(fixtures.domains.domainsCreateSuccess);
+    expect(result).toEqual([{ name: 'new.example.com', success: true, status: 201 }]);
   });
 
   it('does NOT throw on 207 Multi-Status and returns per-item results', async () => {
