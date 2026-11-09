@@ -7,3 +7,4 @@ export * as licensing from './licensing.js';
 export * as packageInfo from './packageInfo.js';
 export * as reporting from './reporting.js';
 export * as token from './token.js';
+export * as senderLists from './senderLists.js';

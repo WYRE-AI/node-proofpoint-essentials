@@ -118,3 +118,9 @@ export interface BatchItemResult {
  * Legacy batch response union. Create methods return normalized BatchItemResult arrays.
  */
 export type BatchResult = BatchItemResult[] | { results?: BatchItemResult[]; [key: string]: unknown };
+
+/** Dedicated sender-list fields documented by SenderListsPresenter. */
+export interface SenderLists {
+  allow_list?: string[];
+  block_list?: string[];
+}

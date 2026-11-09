@@ -1,3 +1,4 @@
+import { SenderListsResource } from './resources/sender-lists.js';
 import { HttpClient } from './http.js';
 import type { ProofpointEssentialsClientConfig } from './config.js';
 import { OrganizationsResource } from './resources/orgs.js';
@@ -29,6 +30,7 @@ import { TokenResource } from './resources/token.js';
  * ```
  */
 export class ProofpointEssentialsClient {
+  public readonly senderLists: SenderListsResource;
   public readonly orgs: OrganizationsResource;
   public readonly domains: DomainsResource;
   public readonly users: UsersResource;
@@ -41,6 +43,7 @@ export class ProofpointEssentialsClient {
 
   constructor(config: ProofpointEssentialsClientConfig) {
     const httpClient = new HttpClient(config);
+    this.senderLists = new SenderListsResource(httpClient);
     this.orgs = new OrganizationsResource(httpClient);
     this.domains = new DomainsResource(httpClient);
     this.users = new UsersResource(httpClient);
