@@ -14,6 +14,16 @@ export const handlers = [
   http.patch(`${BASE_URL}/orgs/example.com`, () => new HttpResponse(null, { status: 204 })),
   http.delete(`${BASE_URL}/orgs/example.com`, () => new HttpResponse(null, { status: 204 })),
 
+  // Sender lists
+  http.get(`${BASE_URL}/orgs/example.com/sender-lists`, () => HttpResponse.json(fixtures.senderLists.senderListsGet)),
+  http.patch(`${BASE_URL}/orgs/example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${BASE_URL}/orgs/example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+  http.delete(`${BASE_URL}/orgs/example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+  http.get(`${BASE_URL}/orgs/example.com/users/alice%40example.com/sender-lists`, () => HttpResponse.json(fixtures.senderLists.senderListsGet)),
+  http.patch(`${BASE_URL}/orgs/example.com/users/alice%40example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+  http.post(`${BASE_URL}/orgs/example.com/users/alice%40example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+  http.delete(`${BASE_URL}/orgs/example.com/users/alice%40example.com/sender-lists`, () => new HttpResponse(null, { status: 204 })),
+
   // Domains
   http.get(`${BASE_URL}/orgs/example.com/domains`, () => HttpResponse.json(fixtures.domains.domainsList)),
   http.post(`${BASE_URL}/orgs/example.com/domains`, async ({ request }) => {

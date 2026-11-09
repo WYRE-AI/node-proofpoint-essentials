@@ -15,6 +15,7 @@ export {
   ServerError,
 } from './errors.js';
 
+export { SenderListsResource } from './resources/sender-lists.js';
 export { OrganizationsResource } from './resources/orgs.js';
 export { DomainsResource } from './resources/domains.js';
 export { UsersResource } from './resources/users.js';
@@ -26,6 +27,7 @@ export { ReportingResource } from './resources/reporting.js';
 export { TokenResource } from './resources/token.js';
 
 export type {
+  SenderLists,
   Organization,
   Domain,
   ProofpointUser,
