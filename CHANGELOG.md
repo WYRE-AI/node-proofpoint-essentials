@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Organization and user sender-list API (`client.senderLists`): GET/PATCH/POST/DELETE on `/orgs/{domain}/sender-lists` and `/orgs/{domain}/users/{user}/sender-lists` with `{ allow_list?, block_list? }` bodies.
+
 ### Fixed
 
 - Preserve explicit per-item outcomes in 201 create responses and strip response-only fields and update-only passwords from user create requests.
