@@ -17,11 +17,11 @@ describe('UsersResource', () => {
     expect(users).toEqual(fixtures.users.usersList);
   });
 
-  it('gets a single user by email query param', async () => {
-    let capturedUrl: URL | undefined;
+  it('gets a single user via GET /orgs/{domain}/users/{email}', async () => {
+    let capturedPath: string | undefined;
     server.use(
-      http.get(`${BASE_URL}/orgs/example.com/users`, ({ request }) => {
-        capturedUrl = new URL(request.url);
+      http.get(`${BASE_URL}/orgs/example.com/users/alice%40example.com`, ({ request }) => {
+        capturedPath = new URL(request.url).pathname;
         return HttpResponse.json(fixtures.users.userSingle);
       })
     );
@@ -29,7 +29,26 @@ describe('UsersResource', () => {
     const client = makeClient();
     const user = await client.users.get('example.com', 'alice@example.com');
     expect(user).toEqual(fixtures.users.userSingle);
-    expect(capturedUrl?.searchParams.get('email')).toBe('alice@example.com');
+    expect(capturedPath).toBe('/api/v1/orgs/example.com/users/alice%40example.com');
+  });
+
+  it('does not call the list endpoint when getting a user by email', async () => {
+    let listHits = 0;
+    server.use(
+      http.get(`${BASE_URL}/orgs/example.com/users`, () => {
+        listHits += 1;
+        return HttpResponse.json(fixtures.users.usersList);
+      }),
+      http.get(`${BASE_URL}/orgs/example.com/users/alice%40example.com`, () =>
+        HttpResponse.json(fixtures.users.userSingle)
+      )
+    );
+
+    const client = makeClient();
+    await expect(client.users.get('example.com', 'alice@example.com')).resolves.toEqual(
+      fixtures.users.userSingle
+    );
+    expect(listHits).toBe(0);
   });
 
   it('creates users in a batch and returns 207 partial results without throwing', async () => {
@@ -76,7 +95,7 @@ describe('UsersResource', () => {
 
   it('throws NotFoundError when the user does not exist', async () => {
     server.use(
-      http.get(`${BASE_URL}/orgs/example.com/users`, () =>
+      http.get(`${BASE_URL}/orgs/example.com/users/missing%40example.com`, () =>
         HttpResponse.json({ message: 'User not found' }, { status: 404 })
       )
     );
