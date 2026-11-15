@@ -37,14 +37,10 @@ export const handlers = [
   http.delete(`${BASE_URL}/orgs/example.com/domains/example.com`, () => new HttpResponse(null, { status: 204 })),
 
   // Users
-  http.get(`${BASE_URL}/orgs/example.com/users`, ({ request }) => {
-    const url = new URL(request.url);
-    const email = url.searchParams.get('email');
-    if (email) {
-      return HttpResponse.json(fixtures.users.userSingle);
-    }
-    return HttpResponse.json(fixtures.users.usersList);
-  }),
+  http.get(`${BASE_URL}/orgs/example.com/users`, () => HttpResponse.json(fixtures.users.usersList)),
+  http.get(`${BASE_URL}/orgs/example.com/users/alice%40example.com`, () =>
+    HttpResponse.json(fixtures.users.userSingle)
+  ),
   http.post(`${BASE_URL}/orgs/example.com/users`, async ({ request }) => {
     const body = await request.json();
     if (body && typeof body === 'object' && 'users' in body) {

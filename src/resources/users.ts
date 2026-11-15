@@ -15,16 +15,15 @@ export class UsersResource {
   }
 
   /**
-   * GET /orgs/{orgDomain}/users?email={email} -- retrieve a single user.
+   * GET /orgs/{orgDomain}/users/{email} (getUser in Proofpoint's OpenAPI).
    *
-   * Proofpoint's docs describe this endpoint as "list or retrieve
-   * individual user by email"; the `email` query param filters the list
-   * endpoint down to a single result.
+   * Uses the single-user path; the list endpoint GET /orgs/{domain}/users
+   * has no email query filter and returns every user in the org.
    */
   async get(orgDomain: string, email: string): Promise<ProofpointUser> {
-    return this.httpClient.request<ProofpointUser>(`/orgs/${encodeURIComponent(orgDomain)}/users`, {
-      params: { email },
-    });
+    return this.httpClient.request<ProofpointUser>(
+      `/orgs/${encodeURIComponent(orgDomain)}/users/${encodeURIComponent(email)}`
+    );
   }
 
   /**

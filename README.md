@@ -105,7 +105,7 @@ await client.domains.delete(orgDomain, domain);
 
 ```ts
 await client.users.list(orgDomain);
-await client.users.get(orgDomain, email); // GET ?email= filter
+await client.users.get(orgDomain, email); // GET /orgs/{orgDomain}/users/{email}
 await client.users.create(orgDomain, { primary_email: 'new@example.com', firstname: 'New', surname: 'User' });
 // Single POST body: {"primary_email":"new@example.com","firstname":"New","surname":"User"}
 await client.users.create(orgDomain, [{ primary_email: 'batch@example.com', firstname: 'Batch', surname: 'User' }]);
