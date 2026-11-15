@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `users.get` now calls `GET /orgs/{orgDomain}/users/{email}` (`getUser`) instead of the list endpoint with `?email=`, which ignored the filter and returned every org user.
 - Preserve explicit per-item outcomes in 201 create responses and strip response-only fields and update-only passwords from user create requests.
 
 ### Changed
